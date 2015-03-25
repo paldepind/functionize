@@ -13,7 +13,7 @@ function toArray(arg) {
   return arr;
 }
 
-var arity = function (n, fn) {
+var ofArity = function (n, fn) {
   switch (n) {
   case 0:
     return function () {
@@ -75,7 +75,7 @@ var arity = function (n, fn) {
 };
 
 var curryN = exports.curryN = function curryN(length, fn) {
-  return arity(length, function () {
+  return ofArity(length, function () {
     var n = arguments.length;
     var shortfall = length - n;
     var idx = n;
@@ -102,6 +102,15 @@ var curryN = exports.curryN = function curryN(length, fn) {
   });
 };
 
+var map = exports.map = curryN(2, function(fn, l) {
+  for (var key in l) {
+    l[key] = fn(l[key], key);
+  }
+  return l;
+});
+
+var arity = exports.arity = function(fn) { return fn.length; };
+
 var invoker = exports.invoker = curryN(2, function invoker(arity, method) {
   return curryN(arity + 1, function () {
     var target = arguments[arguments.length - 1];
@@ -109,6 +118,22 @@ var invoker = exports.invoker = curryN(2, function invoker(arity, method) {
     return target[method].apply(target, args);
   });
 });
+
+var fnInvoker = exports.fnInvoker = curryN(2, function(fn, method) {
+  return invoker(arity(fn), method);
+});
+
+var methods = exports.methods = function(obj) {
+  var ret = {};
+  var keys = Object.getOwnPropertyNames(obj);
+  for (var i = 0; i < keys.length; ++i) {
+    var key = keys[i];
+    if (typeof obj[key] === 'function') {
+      ret[key] = obj[key];
+    }
+  }
+  return ret;
+};
 
 var convert = exports.convert = function(obj) {
   var ret = {};
