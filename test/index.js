@@ -77,6 +77,16 @@ describe('mapField', function() {
   });
 });
 
+describe('rearg', function() {
+  it('rearranges arguments', function() {
+    function fn(a, b, c) {
+      return a + b + c;
+    }
+    var g = f.rearg([2, 0, 1], fn);
+    assert.equal(g('a', 'b', 'c'), 'bca');
+  });
+});
+
 describe('extracting methods', function() {
   describe('extracting methods from String', function() {
     it('can extract methods from String', function() {

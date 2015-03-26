@@ -148,14 +148,25 @@ var convert = exports.convert = function(obj) {
   return ret;
 };
 
-var mapField = exports.mapFields = function(keys, fn, obj) {
+var mapField = exports.mapFields = curryN(3, function(keys, fn, obj) {
   for (var i = 0; i < keys.length; ++i) {
     obj[keys[i]] = fn(obj[keys[i]]);
   }
   return obj;
-};
+});
 
-var mapField = exports.mapFieldTo = function(key, newKey, fn, obj) {
+var mapField = exports.mapFieldTo = curryN(4, function(key, newKey, fn, obj) {
   obj[newKey] = fn(obj[key]);
   return obj;
-};
+});
+
+var rearg = exports.rearg = curryN(2, function(newOrder, fn) {
+  var l = newOrder.length;
+  return ofArity(l, function() {
+    var args = [];
+    for (var i = 0; i < l; ++i) {
+      args[newOrder[i]] = arguments[i];
+    }
+    return fn.apply(undefined, args);
+  });
+});
