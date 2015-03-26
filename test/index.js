@@ -56,6 +56,27 @@ describe('methods', function() {
   });
 });
 
+describe('mapField', function() {
+  var upper = f.invoker(0, 'toUpperCase');
+  it('applies a function to a field', function() {
+    var o = {foo: 'bar', animal: 'rabbit'};
+    var mo = f.mapFields(['foo'], upper, o);
+    assert.equal(mo.foo, 'BAR');
+  });
+  it('applies a function to all fields', function() {
+    var o = {foo: 'bar', animal: 'rabbit', name: 'Simon'};
+    var mo = f.mapFields(['animal', 'name'], upper, o);
+    assert.equal(mo.animal, 'RABBIT');
+    assert.equal(mo.name, 'SIMON');
+    assert.equal(mo.foo, 'bar');
+  });
+  it('applies a function to a field an saves in new field', function() {
+    var o = {foo: 'bar', animal: 'rabbit'};
+    var mo = f.mapFieldTo('foo', 'bar', upper, o);
+    assert.equal(mo.bar, 'BAR');
+  });
+});
+
 describe('extracting methods', function() {
   describe('extracting methods from String', function() {
     it('can extract methods from String', function() {
@@ -71,6 +92,15 @@ describe('extracting methods', function() {
       var sliceFrom6 = S.slice(6);
       assert.equal(sliceFrom6(8, 'abcdefghijklm'), 'gh');
       assert.equal(S.trim(' horse  '), 'horse');
+    });
+    it('extracts methods with mapped renaming', function() {
+      var S = f.mapFieldTo('slice', 'sliceTo', function(slice) {
+        return slice(undefined);
+      }, f.mapFieldTo('slice', 'sliceFrom', function(slice) {
+        return slice(f._, undefined);
+      }, f.map(f.fnInvoker, f.methods(String.prototype))));
+      assert.equal(S.sliceFrom(6, 'abcdefghijklm'), 'ghijklm');
+      assert.equal(S.sliceTo(4, 'abcdefghijklm'), 'abcd');
     });
   });
 });

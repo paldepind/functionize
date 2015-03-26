@@ -13,6 +13,7 @@ function toArray(arg) {
   return arr;
 }
 
+// Modified versions of arity and curryN from Ramda
 var ofArity = function (n, fn) {
   switch (n) {
   case 0:
@@ -145,4 +146,16 @@ var convert = exports.convert = function(obj) {
     }
   }
   return ret;
+};
+
+var mapField = exports.mapFields = function(keys, fn, obj) {
+  for (var i = 0; i < keys.length; ++i) {
+    obj[keys[i]] = fn(obj[keys[i]]);
+  }
+  return obj;
+};
+
+var mapField = exports.mapFieldTo = function(key, newKey, fn, obj) {
+  obj[newKey] = fn(obj[key]);
+  return obj;
 };
