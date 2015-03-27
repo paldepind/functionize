@@ -1,10 +1,11 @@
 var assert = require('assert');
 var f = require('../functionize.js');
 
+var sum3 = function(x, y, z) {
+  return x + y + z;
+};
+
 describe('curry', function() {
-  var sum3 = function(x, y, z) {
-    return x + y + z;
-  };
   var cSum3 = f.curryN(3, sum3);
   var addDiv = function(x, y, z) {
     return (x + y) / z;
@@ -23,8 +24,16 @@ var dummy = {
   bar: function() { return 'no-op'; },
 };
 
-it('gives arity', function() {
-  assert.equal(f.arity(function(a, b, c) { }), 3);
+describe('arity functions', function() {
+  describe('arity', function() {
+    it('gives arity of function with no arguments', function() {
+      assert.equal(f.arity(function() {}), 0);
+    });
+    it('gives arity', function() {
+      assert.equal(f.arity(function(a, b) { }), 2);
+      assert.equal(f.arity(function(a, b, c, d, e) { }), 5);
+    });
+  });
 });
 
 describe('invoker', function() {
@@ -77,6 +86,14 @@ describe('mapField', function() {
   });
 });
 
+describe('dupTo', function() {
+  var o = {one: 1, two: 2};
+  o = f.dupTo('one', 'uno', o);
+  assert.deepEqual(o, {
+    one: 1, two: 2, uno: 1
+  });
+});
+
 describe('rearg', function() {
   it('rearranges arguments', function() {
     function fn(a, b, c) {
@@ -85,32 +102,69 @@ describe('rearg', function() {
     var g = f.rearg([2, 0, 1], fn);
     assert.equal(g('a', 'b', 'c'), 'bca');
   });
+  it('flips arguments', function() {
+    function sub(x, y) { return x - y; };
+    assert.equal(sub(8, 2), 6);
+    assert.equal(f.flip(sub)(2, 8), 6);
+  });
 });
 
-describe('extracting methods', function() {
-  describe('extracting methods from String', function() {
-    it('can extract methods from String', function() {
-      var S = f.map(f.fnInvoker, f.methods(String.prototype));
-      assert.equal(typeof S.slice, 'function');
-      assert.equal(typeof S.substr, 'function');
-      assert.equal(typeof S.split, 'function');
-      assert.equal(typeof S.charAt, 'function');
-    });
-    it('extracts useable methods', function() {
-      var S = f.map(f.fnInvoker, f.methods(String.prototype));
-      assert.equal(S.slice(6, undefined, 'abcdefghijklm'), 'ghijklm');
-      var sliceFrom6 = S.slice(6);
-      assert.equal(sliceFrom6(8, 'abcdefghijklm'), 'gh');
-      assert.equal(S.trim(' horse  '), 'horse');
-    });
-    it('extracts methods with mapped renaming', function() {
-      var S = f.mapFieldTo('slice', 'sliceTo', function(slice) {
-        return slice(undefined);
-      }, f.mapFieldTo('slice', 'sliceFrom', function(slice) {
-        return slice(f._, undefined);
-      }, f.map(f.fnInvoker, f.methods(String.prototype))));
-      assert.equal(S.sliceFrom(6, 'abcdefghijklm'), 'ghijklm');
-      assert.equal(S.sliceTo(4, 'abcdefghijklm'), 'abcd');
-    });
+describe('pipe', function() {
+  it('concats function from left to right', function() {
+    var g = function(x) { return x * 2; };
+    var h = function(x) { return x + 2; };
+    var i = function(x) { return x * x; };
+    var p = f.pipe([g, h, i]);
+    assert.equal(p(3), 64);
+  });
+});
+
+describe('apply', function() {
+  it('applies array to function', function() {
+    assert.equal(f.apply(sum3, [1, 2, 3]), 6);
+  });
+});
+
+describe('converting String', function() {
+  var converter = f.pipe([
+    f.methods, f.map(f.fnInvoker),
+    f.mapFieldTo('slice', 'sliceFrom', f.apply(f._, [f._, undefined])),
+    f.mapFieldTo('slice', 'sliceTo', f.apply(f._, [undefined])),
+  ]);
+  var S = converter(String.prototype);
+  it('can extract methods from String', function() {
+    assert.equal(typeof S.slice, 'function');
+    assert.equal(typeof S.substr, 'function');
+    assert.equal(typeof S.split, 'function');
+    assert.equal(typeof S.charAt, 'function');
+  });
+  it('extracts useable methods', function() {
+    assert.equal(S.slice(6, undefined, 'abcdefghijklm'), 'ghijklm');
+    var sliceFrom6 = S.slice(6);
+    assert.equal(sliceFrom6(8, 'abcdefghijklm'), 'gh');
+    assert.equal(S.trim(' horse  '), 'horse');
+  });
+  it('extracts methods with mapped renaming', function() {
+    assert.equal(S.sliceFrom(6, 'abcdefghijklm'), 'ghijklm');
+    assert.equal(S.sliceTo(4, 'abcdefghijklm'), 'abcd');
+  });
+});
+
+describe('converting Array', function() {
+  var converter = f.pipe([
+    f.methods, f.map(f.fnInvoker),
+    f.dupTo('sort', 'sortBy'),
+    f.mapFields(['sort'], f.apply(f._, [undefined])),
+  ]);
+  var A = converter(Array.prototype);
+  it('can sort', function() {
+    var a = [3, 8, 4];
+    A.sort(a);
+    assert.deepEqual(a, [3, 4, 8]);
+  });
+  it('can map', function() {
+    var a = [3, 8, 4];
+    var square = A.map(function(x) { return x*x; });
+    assert.deepEqual(square(a), [9, 64, 16]);
   });
 });

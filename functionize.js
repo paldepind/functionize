@@ -155,7 +155,12 @@ var mapField = exports.mapFields = curryN(3, function(keys, fn, obj) {
   return obj;
 });
 
-var mapField = exports.mapFieldTo = curryN(4, function(key, newKey, fn, obj) {
+var dupTo = exports.dupTo = curryN(3, function(key, newKey, obj) {
+  obj[newKey] = obj[key];
+  return obj;
+});
+
+var mapFieldTo = exports.mapFieldTo = curryN(4, function(key, newKey, fn, obj) {
   obj[newKey] = fn(obj[key]);
   return obj;
 });
@@ -169,4 +174,18 @@ var rearg = exports.rearg = curryN(2, function(newOrder, fn) {
     }
     return fn.apply(undefined, args);
   });
+});
+
+var flip = exports.flip = rearg([1, 0]);
+
+var pipe = exports.pipe = function(fns) {
+  return function(v) {
+    return fns.reduce(function(v, fn) {
+      return fn(v);
+    }, v);
+  };
+};
+
+var apply = exports.apply = curryN(2, function(fn, arr) {
+  return fn.apply(this, arr);
 });
