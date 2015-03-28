@@ -150,16 +150,6 @@ var mapFields = exports.mapFields = curryN(3, function(keys, fn, obj) {
   return obj;
 });
 
-var dupTo = exports.dupTo = curryN(3, function(key, newKey, obj) {
-  obj[newKey] = obj[key];
-  return obj;
-});
-
-var mapFieldTo = exports.mapFieldTo = curryN(4, function(key, newKey, fn, obj) {
-  obj[newKey] = fn(obj[key]);
-  return obj;
-});
-
 var rearg = exports.rearg = curryN(2, function(newOrder, fn) {
   var l = newOrder.length;
   return ofArity(l, function() {
@@ -188,6 +178,13 @@ var apply = exports.apply = curryN(2, function(fn, arr) {
 var omit = exports.omit = curryN(2, function(keys, obj) {
   for (var i = 0; i < keys.length; ++i) {
     delete obj[keys[i]];
+  }
+  return obj;
+});
+
+var to = exports.to = curryN(2, function(toMap, obj) {
+  for (var key in toMap) {
+    obj[key] = pipe(toMap[key])(obj);
   }
   return obj;
 });

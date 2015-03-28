@@ -73,35 +73,6 @@ describe('methods', function() {
   });
 });
 
-describe('mapField', function() {
-  var upper = fz.invoker(0, 'toUpperCase');
-  it('applies a function to a field', function() {
-    var o = {foo: 'bar', animal: 'rabbit'};
-    var mo = fz.mapFields(['foo'], upper, o);
-    assert.equal(mo.foo, 'BAR');
-  });
-  it('applies a function to all fields', function() {
-    var o = {foo: 'bar', animal: 'rabbit', name: 'Simon'};
-    var mo = fz.mapFields(['animal', 'name'], upper, o);
-    assert.equal(mo.animal, 'RABBIT');
-    assert.equal(mo.name, 'SIMON');
-    assert.equal(mo.foo, 'bar');
-  });
-  it('applies a function to a field an saves in new field', function() {
-    var o = {foo: 'bar', animal: 'rabbit'};
-    var mo = fz.mapFieldTo('foo', 'bar', upper, o);
-    assert.equal(mo.bar, 'BAR');
-  });
-});
-
-describe('dupTo', function() {
-  var o = {one: 1, two: 2};
-  o = fz.dupTo('one', 'uno', o);
-  assert.deepEqual(o, {
-    one: 1, two: 2, uno: 1
-  });
-});
-
 describe('rearg', function() {
   it('rearranges arguments', function() {
     function fn(a, b, c) {
@@ -150,13 +121,33 @@ describe('omit', function() {
   });
 });
 
+describe('to', function() {
+  it('works', function() {
+    var o = {
+      str: 'hello',
+      nr: 3,
+    };
+    var no = fz.to({
+      upStr: [fz.prop('str'), fz.invoker(0, 'toUpperCase')],
+      lrgNr: [fz.prop('nr'), function(x) { return x*300; }],
+      sameNr: [fz.prop('nr')],
+    }, o);
+    assert.equal(no.upStr, 'HELLO');
+    assert.equal(no.lrgNr, 900);
+    assert.equal(no.sameNr, 3);
+  });
+});
+
 describe('converting String', function() {
   var converter = fz.pipe([
     fz.omit(['anchor', 'big', 'blink', 'bold', 'fixed', 'fontcolor',
              'fontsize', 'italics', 'link', 'small', 'strike', 'sub', 'sup']),
     fz.methods, fz.map(fz.fnInvoker),
-    fz.mapFieldTo('slice', 'sliceFrom', fz.apply(fz._, [fz._, undefined])),
-    fz.mapFieldTo('slice', 'sliceTo', fz.apply(fz._, [undefined])),
+    fz.to({
+      sliceFrom: [fz.prop('slice'), fz.apply(fz._, [fz._, undefined])],
+      sliceTo: [fz.prop('slice'), fz.apply(fz._, [undefined])],
+      uppercase: [fz.prop('toUpperCase')],
+    }),
   ]);
   var S = converter(String.prototype);
   it('extracts methods from String', function() {
@@ -180,13 +171,18 @@ describe('converting String', function() {
     assert.equal(S.sliceFrom(6, 'abcdefghijklm'), 'ghijklm');
     assert.equal(S.sliceTo(4, 'abcdefghijklm'), 'abcd');
   });
+  it('contains renamed uppercase', function() {
+    assert.equal(S.uppercase('horse'), 'HORSE');
+  });
 });
 
 describe('converting Array', function() {
   var converter = fz.pipe([
     fz.methods, fz.map(fz.fnInvoker),
-    fz.dupTo('sort', 'sortBy'),
-    fz.mapFields(['sort'], fz.apply(fz._, [undefined])),
+    fz.to({
+      sortBy: [fz.prop('sort')],
+      sort: [fz.prop('sort'), fz.apply(fz._, [undefined])],
+    }),
   ]);
   var A = converter(Array.prototype);
   it('can sort', function() {
