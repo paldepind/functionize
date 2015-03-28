@@ -27,7 +27,9 @@ community thus the need for functionize.
 * Take the conversion burden of other functional libraries making them more
   focused in scope.
 
-# Example
+# Examples
+
+## Converting String
 
 This is a simple conversion of the standard String methods in JavaScript
 
@@ -36,9 +38,11 @@ var converter = fz.pipe([
   fz.omit(['anchor', 'big', 'blink', 'bold', 'fixed', 'fontcolor',
            'fontsize', 'italics', 'link', 'small', 'strike', 'sub', 'sup']),
   fz.methods, fz.map(fz.fnInvoker),
-  fz.mapFieldTo('slice', 'sliceFrom', fz.apply(fz._, [fz._, undefined])),
-  fz.mapFieldTo('slice', 'sliceTo', fz.apply(fz._, [undefined])),
-  fz.dupTo('toUpperCase', 'uppercase'),
+  fz.to({
+    sliceFrom: [fz.prop('slice'), fz.apply(fz._, [fz._, undefined])],
+    sliceTo: [fz.prop('slice'), fz.apply(fz._, [undefined])],
+    uppercase: [fz.prop('toUpperCase')],
+  }),
 ]);
 var S = converter(String.prototype);
 ```
@@ -56,11 +60,36 @@ S.trim(' horse  '); // 'horse'
 S.uppercase('foobar'); // 'FOOBAR'
 ```
 
+## Converting Array
+
+```javascript
+var converter = fz.pipe([
+  fz.methods, fz.map(fz.fnInvoker),
+  fz.to({
+    sortBy: [fz.prop('sort')],
+    sort: [fz.prop('sort'), fz.apply(fz._, [undefined])],
+  }),
+]);
+var A = converter(Array.prototype);
+```
+
+It can be used like this
+
+```javascript
+var a = [3, 8, 4];
+A.sort(a); // [3, 4, 8]
+var ns = [3, 8, 4];
+var square = A.map(function(x) { return x*x; }); // [9, 64, 16]
+```
+
 # API
 
 For better documentation see the source and/or the tests.
 
 ## curryN(arity, fn)
+
+Return a curried function with arity `arity` that calls `fn` when it has
+recieved all its arguments.
 
 ## map(fn, obj)
 
@@ -71,17 +100,19 @@ object value and key.
 
 Returns the arity of the passed function.
 
-## invoker(arity, method)
+## invoker(arity, methodName)
 
 Returns a functions that applies the named method to an object.
+
+## fnInvoker(fn, methodName)
+
+Like `invoker`, but extracts its arity from `fn`.
 
 ## methods(obj)
 
 Returns an object with all the objects on `obj`.
 
 ## mapFields(keys, fn, obj)
-
-## mapFieldTo(keys, fn, obj)
 
 ## rearg(newOrder, fn)
 
@@ -97,6 +128,11 @@ g('a', 'b', 'c'); // 'bca'
 
 ## flip(fn)
 
+Returns a function equivalent to `fn` but with the order of its two first
+arguments reversed.
+
+_Note_: `flip` is excactly the same as `rearg([1, 0])`. Its removal is considered.
+
 ## pipe(fns)
 
 Compose, left to right. I.e: `pipe(f, g, h)(x)` is the same as
@@ -104,3 +140,8 @@ Compose, left to right. I.e: `pipe(f, g, h)(x)` is the same as
 
 ## apply(fn, arr)
 
+Calls `fn` with the arguments specified in `arr`.
+
+## omit(keys, obj)
+
+Returns `obj` without the keys mentioned in `keys`.
