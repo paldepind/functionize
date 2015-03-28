@@ -14,7 +14,10 @@ function toArray(arg) {
 }
 
 // Modified versions of arity and curryN from Ramda
-var ofArity = function (n, fn) {
+var ofArity = exports.ofArity = function ofArity(n, fn) {
+  if (arguments.length === 1) {
+    return ofArity.bind(undefined, n);
+  }
   switch (n) {
   case 0:
     return function () {
@@ -136,7 +139,7 @@ var methods = exports.methods = function(obj) {
   return ret;
 };
 
-var mapField = exports.mapFields = curryN(3, function(keys, fn, obj) {
+var mapFields = exports.mapFields = curryN(3, function(keys, fn, obj) {
   for (var i = 0; i < keys.length; ++i) {
     obj[keys[i]] = fn(obj[keys[i]]);
   }
@@ -176,4 +179,11 @@ var pipe = exports.pipe = function(fns) {
 
 var apply = exports.apply = curryN(2, function(fn, arr) {
   return fn.apply(this, arr);
+});
+
+var omit = exports.omit = curryN(2, function(keys, obj) {
+  for (var i = 0; i < keys.length; ++i) {
+    delete obj[keys[i]];
+  }
+  return obj;
 });

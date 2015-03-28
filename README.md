@@ -33,6 +33,8 @@ This is a simple conversion of the standard String methods in JavaScript
 
 ```javascript
 var converter = fz.pipe([
+  fz.omit(['anchor', 'big', 'blink', 'bold', 'fixed', 'fontcolor',
+           'fontsize', 'italics', 'link', 'small', 'strike', 'sub', 'sup']),
   fz.methods, fz.map(fz.fnInvoker),
   fz.mapFieldTo('slice', 'sliceFrom', fz.apply(fz._, [fz._, undefined])),
   fz.mapFieldTo('slice', 'sliceTo', fz.apply(fz._, [undefined])),
