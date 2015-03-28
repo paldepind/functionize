@@ -36,6 +36,14 @@ describe('arity functions', function() {
   });
 });
 
+describe('prop', function() {
+  it('returns property from obj', function() {
+    var o = {foo: 1, bar: 2};
+    assert.equal(fz.prop('foo', o), 1);
+    assert.equal(fz.prop('bar', o), 2);
+  });
+});
+
 describe('invoker', function() {
   it('returns proper curried function', function() {
     var sliceFrom = fz.invoker(1, 'slice');

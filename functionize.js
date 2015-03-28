@@ -115,6 +115,10 @@ var map = exports.map = curryN(2, function(fn, l) {
 
 var arity = exports.arity = function(fn) { return fn.length; };
 
+var prop = exports.prop = curryN(2, function(key, obj) {
+  return obj[key];
+});
+
 var invoker = exports.invoker = curryN(2, function invoker(arity, method) {
   return curryN(arity + 1, function () {
     var target = arguments[arguments.length - 1];
