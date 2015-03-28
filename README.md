@@ -24,8 +24,14 @@ community thus the need for functionize.
 * Make it easy and concise to convert any library into one that adheres to the above
   criteria as much as possible.
 * Facilitate sharing and reuse of such library conversions.
-* Take the conversion burden of other functional libraries making them more
+* Take the conversion burden of other functional libraries, making them more
   focused in scope.
+
+# How it works
+
+functionize tries to be as unfancy as possible. And instead of writing actual
+configuration you pass the library to be transformed through a series of
+composed functions. This achieves simplicity and flexibility.
 
 # Examples
 
@@ -93,8 +99,8 @@ recieved all its arguments.
 
 ## map(fn, obj)
 
-Maps a function over an object. The mapper function recieves both the
-object value and key.
+Maps a function over an _object_(not an array). The mapper function recieves
+both the object value and key.
 
 ## arity(fn)
 
@@ -112,7 +118,17 @@ Like `invoker`, but extracts its arity from `fn`.
 
 Returns an object with all the objects on `obj`.
 
-## mapFields(keys, fn, obj)
+## mapFields(properties, fn, obj)
+
+For each property in `propeties` it takes that property from `obj` passes it
+through `fn` and returns an object with the keys overwritten by the result of
+`fn`.
+
+```javascript
+var obj = {a: 1, bunch: 2, of: 3, properties: 4};
+var newObj = fz.mapFields(['bunch', 'of'], function(x) { return x + 3; }, obj);
+newObj; // {a: 1, bunch: 5, of: 3, properties: 7}
+```
 
 ## rearg(newOrder, fn)
 
