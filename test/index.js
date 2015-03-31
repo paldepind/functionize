@@ -24,6 +24,12 @@ var dummy = {
   bar: function() { return 'no-op'; },
 };
 
+describe('filter', function() {
+  var obj = {one: 1, two: 2, three: 3};
+  var obj2 = fz.filter(function(n) { return n > 1; }, obj);
+  assert.deepEqual({two: 2, three: 3}, obj2);
+});
+
 describe('arity functions', function() {
   describe('arity', function() {
     it('gives arity of function with no arguments', function() {
@@ -146,6 +152,7 @@ describe('converting String', function() {
     fz.to({
       sliceFrom: [fz.prop('slice'), fz.apply(fz._, [fz._, undefined])],
       sliceTo: [fz.prop('slice'), fz.apply(fz._, [undefined])],
+      concat: [fz.prop('concat'), fz.rearg([1, 0])],
       uppercase: [fz.prop('toUpperCase')],
     }),
   ]);
@@ -166,6 +173,7 @@ describe('converting String', function() {
     var sliceFrom6 = S.slice(6);
     assert.equal(sliceFrom6(8, 'abcdefghijklm'), 'gh');
     assert.equal(S.trim(' horse  '), 'horse');
+    assert.equal(S.concat('foo', 'bar'), 'foobar');
   });
   it('extracts methods with mapped renaming', function() {
     assert.equal(S.sliceFrom(6, 'abcdefghijklm'), 'ghijklm');

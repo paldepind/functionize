@@ -47,6 +47,7 @@ var converter = fz.pipe([
   fz.to({
     sliceFrom: [fz.prop('slice'), fz.apply(fz._, [fz._, undefined])],
     sliceTo: [fz.prop('slice'), fz.apply(fz._, [undefined])],
+    concat: [fz.prop('concat'), fz.rearg([1, 0])],
     uppercase: [fz.prop('toUpperCase')],
   }),
 ]);
@@ -62,8 +63,9 @@ sliceFrom6(8, 'abcdefghijklm'); // 'gh'
 S.sliceTo(4, 'abcdefghijklm'); // 'abcd'
 
 S.trim(' horse  '); // 'horse'
-
 S.uppercase('foobar'); // 'FOOBAR'
+S.concat('foo', 'bar'); // 'foobar'
+
 ```
 
 ## Converting Array
@@ -101,6 +103,11 @@ recieved all its arguments.
 
 Maps a function over an _object_(not an array). The mapper function recieves
 both the object value and key.
+
+## filter(fn, obj)
+
+Maps a function over an object and returns an object with only the keys whose
+properties satisfies the predicate function.
 
 ## arity(fn)
 

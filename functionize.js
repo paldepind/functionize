@@ -113,6 +113,18 @@ var map = exports.map = curryN(2, function(fn, l) {
   return l;
 });
 
+var filter = exports.filter = curryN(2, function(fn, obj) {
+  var ret = {};
+  var keys = Object.getOwnPropertyNames(obj);
+  for (var i = 0; i < keys.length; ++i) {
+    var key = keys[i];
+    if (fn(obj[key])) {
+      ret[key] = obj[key];
+    }
+  }
+  return ret;
+});
+
 var arity = exports.arity = function(fn) { return fn.length; };
 
 var prop = exports.prop = curryN(2, function(key, obj) {
@@ -131,17 +143,9 @@ var fnInvoker = exports.fnInvoker = curryN(2, function(fn, method) {
   return invoker(arity(fn), method);
 });
 
-var methods = exports.methods = function(obj) {
-  var ret = {};
-  var keys = Object.getOwnPropertyNames(obj);
-  for (var i = 0; i < keys.length; ++i) {
-    var key = keys[i];
-    if (typeof obj[key] === 'function') {
-      ret[key] = obj[key];
-    }
-  }
-  return ret;
-};
+var methods = exports.methods = filter(function(f) {
+  return typeof f === 'function';
+});
 
 var mapFields = exports.mapFields = curryN(3, function(keys, fn, obj) {
   for (var i = 0; i < keys.length; ++i) {
