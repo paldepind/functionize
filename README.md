@@ -44,11 +44,11 @@ var converter = fz.pipe([
   fz.omit(['anchor', 'big', 'blink', 'bold', 'fixed', 'fontcolor',
            'fontsize', 'italics', 'link', 'small', 'strike', 'sub', 'sup']),
   fz.methods, fz.map(fz.fnInvoker),
-  fz.to({
-    sliceFrom: [fz.prop('slice'), fz.apply(fz._, [fz._, undefined])],
-    sliceTo: [fz.prop('slice'), fz.apply(fz._, [undefined])],
-    concat: [fz.prop('concat'), fz.rearg([1, 0])],
-    uppercase: [fz.prop('toUpperCase')],
+  fz.mapTo({
+    slice: {sliceFrom: [fz.apply(fz._, [fz._, undefined])],
+            sliceTo: [fz.apply(fz._, [undefined])]},
+    concat: {concat: [fz.rearg([1, 0])]},
+    toUpperCase: {uppercase: []},
   }),
 ]);
 var S = converter(String.prototype);

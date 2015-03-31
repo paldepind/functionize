@@ -129,10 +129,7 @@ describe('omit', function() {
 
 describe('to', function() {
   it('works', function() {
-    var o = {
-      str: 'hello',
-      nr: 3,
-    };
+    var o = {str: 'hello', nr: 3};
     var no = fz.to({
       upStr: [fz.prop('str'), fz.invoker(0, 'toUpperCase')],
       lrgNr: [fz.prop('nr'), function(x) { return x*300; }],
@@ -144,16 +141,32 @@ describe('to', function() {
   });
 });
 
+describe('mapTo', function() {
+  it('applies functions to properties an sets to new', function() {
+    var o = {str: 'hello', nr: 3};
+    var no = fz.mapTo({
+      str: {upStr: [fz.invoker(0, 'toUpperCase')]},
+      nr: {lgNr: [function(n) { return n*300; }],
+           negNr: [function(n) { return -n; }]},
+    }, o);
+    assert.equal(no.str, 'hello');
+    assert.equal(no.nr, 3);
+    assert.equal(no.upStr, 'HELLO');
+    assert.equal(no.lgNr, 900);
+    assert.equal(no.negNr, -3);
+  });
+});
+
 describe('converting String', function() {
   var converter = fz.pipe([
     fz.omit(['anchor', 'big', 'blink', 'bold', 'fixed', 'fontcolor',
              'fontsize', 'italics', 'link', 'small', 'strike', 'sub', 'sup']),
     fz.methods, fz.map(fz.fnInvoker),
-    fz.to({
-      sliceFrom: [fz.prop('slice'), fz.apply(fz._, [fz._, undefined])],
-      sliceTo: [fz.prop('slice'), fz.apply(fz._, [undefined])],
-      concat: [fz.prop('concat'), fz.rearg([1, 0])],
-      uppercase: [fz.prop('toUpperCase')],
+    fz.mapTo({
+      slice: {sliceFrom: [fz.apply(fz._, [fz._, undefined])],
+              sliceTo: [fz.apply(fz._, [undefined])]},
+      concat: {concat: [fz.rearg([1, 0])]},
+      toUpperCase: {uppercase: []},
     }),
   ]);
   var S = converter(String.prototype);

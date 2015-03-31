@@ -192,3 +192,13 @@ var to = exports.to = curryN(2, function(toMap, obj) {
   }
   return obj;
 });
+
+var mapTo = exports.mapTo = curryN(2, function(fromToMap, obj) {
+  map(function(to, fromKey) {
+    var fromVal = obj[fromKey];
+    map(function(fns, toKey) {
+      obj[toKey] = pipe(fns)(fromVal);
+    }, to);
+  }, fromToMap);
+  return obj;
+});
